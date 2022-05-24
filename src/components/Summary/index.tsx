@@ -1,12 +1,27 @@
 import { Container } from "./styles";
 import { Imgs } from '../../assets/index';
-import { useContext } from "react";
-import { TransactionsContext } from '../../TransactionsContext';
+import { useTransactions } from '../../hooks/useTransactions';
+import { setCurrency } from "../../utils/setCurrency";
 
 export function Summary() {
-  const data = useContext(TransactionsContext);
+  const { transactions } = useTransactions();
 
-  console.log(data)
+  const summary = transactions?.reduce((acc, transaction) => {
+    if (transaction.type === 'deposit') {
+      acc.deposits += transaction.amount;
+      acc.total += transaction.amount;
+    } else {
+      acc.withdraws += transaction.amount
+      acc.total -= transaction.amount;
+    }
+
+    return acc
+  }, {
+    deposits: 0,
+    withdraws: 0,
+    total: 0
+  });
+
   return (
     <Container>
       <div>
@@ -14,21 +29,24 @@ export function Summary() {
           <p>Entradas</p>
           <img src={Imgs.income} alt="entradas" loading="lazy" />
         </header>
-        <strong> R$1000,00</strong>
+        <strong>
+          {setCurrency(summary.deposits)}
+        </strong>
       </div>
       <div>
         <header>
           <p>Saídas</p>
           <img src={Imgs.outcome} alt="saida" loading="lazy" />
         </header>
-        <strong> - R$400,00</strong>
+        <strong> - {setCurrency(summary.withdraws)}</strong>
       </div>
       <div className="highlight-background">
         <header>
           <p>Total</p>
           <img src={Imgs.total} alt="total" loading="lazy" />
         </header>
-        <strong> R$600,00</strong>
+        <strong>{setCurrency(summary.total)}
+        </strong>
       </div>
     </Container>
   )
